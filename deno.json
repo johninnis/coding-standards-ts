@@ -4,6 +4,10 @@
   "publish": {
     "exclude": ["tests/", "deno.lock", ".github/"]
   },
+  "minimumDependencyAge": {
+    "age": "PT24H",
+    "exclude": ["jsr:@innis/*"]
+  },
   "license": "MIT",
   "description": "Deno lint rules and CI check scripts that enforce the Innis coding conventions: clean-architecture layering, no type assertions, parameter and file-length limits, kebab-case filenames, UK English, and the documentation, exports-tested and coverage gates.",
   "exports": {
