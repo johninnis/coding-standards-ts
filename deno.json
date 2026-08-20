@@ -1,6 +1,9 @@
 {
   "name": "@innis/coding-standards",
   "version": "0.1.0",
+  "publish": {
+    "exclude": ["tests/", "deno.lock", ".github/"]
+  },
   "license": "MIT",
   "description": "Deno lint rules and CI check scripts that enforce the Innis coding conventions: clean-architecture layering, no type assertions, parameter and file-length limits, kebab-case filenames, UK English, and the documentation, exports-tested and coverage gates.",
   "exports": {
