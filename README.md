@@ -2,24 +2,15 @@
 
 [![CI](https://github.com/johninnis/coding-standards-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/johninnis/coding-standards-ts/actions/workflows/ci.yml)
 
-> These rules encode the conventions of the **Innis ecosystem**. They are deliberately opinionated and
-> almost certainly not to everyone's taste — that is by design. They are published for anyone extending
-> the Innis libraries, or who simply wants to hold their own code to the same standards.
+> These rules encode the conventions of the **Innis ecosystem**. They are deliberately opinionated and almost certainly not to everyone's taste — that is by design. They are published for anyone extending the Innis libraries, or who simply wants to hold their own code to the same standards.
 
-Deno lint rules and CI check scripts that enforce the Innis coding conventions mechanically, inside
-the `deno lint` run and CI gate every package already has. Because the rules run on the real AST and
-the scripts resolve the public surface through `deno doc` from the repository's own `exports`,
-re-export barrels, multi-entry packages and type-only exports are all handled correctly. Shipping
-the gate as one package means a rule change is a version bump in every repository instead of a file
-copied into each.
+Deno lint rules and CI check scripts that enforce the Innis coding conventions mechanically, inside the `deno lint` run and CI gate every package already has. Because the rules run on the real AST and the scripts resolve the public surface through `deno doc` from the repository's own `exports`, re-export barrels, multi-entry packages and type-only exports are all handled correctly. Shipping the gate as one package means a rule change is a version bump in every repository instead of a file copied into each.
 
-It is the TypeScript sibling of [`innis/coding-standards`](https://github.com/johninnis/coding-standards),
-which enforces the same conventions for PHP through PHPStan.
+It is the TypeScript sibling of [`innis/coding-standards`](https://github.com/johninnis/coding-standards), which enforces the same conventions for PHP through PHPStan.
 
 ## Installation
 
-There is nothing to install — Deno resolves the package straight from JSR. Point the repository's
-deno.json at it: the plugin in `lint.plugins`, the scripts as tasks:
+There is nothing to install — Deno resolves the package straight from JSR. Point the repository's deno.json at it: the plugin in `lint.plugins`, the scripts as tasks:
 
 ```json
 {
@@ -34,13 +25,11 @@ deno.json at it: the plugin in `lint.plugins`, the scripts as tasks:
 }
 ```
 
-Requires Deno 2.2 or later — the lint plugin API arrived in 2.2. The layer and path rules resolve filenames against the directory `deno lint` runs
-from, so run it from the repository root — which is where Deno runs configured tasks anyway.
+Requires Deno 2.2 or later — the lint plugin API arrived in 2.2. The layer and path rules resolve filenames against the directory `deno lint` runs from, so run it from the repository root — which is where Deno runs configured tasks anyway.
 
 ## What it enforces
 
-Every rule reports under the plugin's `innis/` namespace, so a finding reads `innis/no-emoji` and a
-suppression can target exactly one rule.
+Every rule reports under the plugin's `innis/` namespace, so a finding reads `innis/no-emoji` and a suppression can target exactly one rule.
 
 | Identifier | What it flags |
 | --- | --- |
@@ -53,11 +42,9 @@ suppression can target exactly one rule.
 | `innis/max-file-lines` | A file over five hundred lines — split it into smaller, single-responsibility modules. |
 | `innis/uk-english` | A US spelling in a declared identifier (variable, function, parameter, class, interface, type alias, property or method name), matched word-by-word so camelCase compounds such as `backgroundColor` are caught; string values are left alone. |
 
-Two rules relax in test code: `no-emoji` and `uk-english` skip test files (`*.test.ts` anywhere, and
-everything under `tests/`).
+Two rules relax in test code: `no-emoji` and `uk-english` skip test files (`*.test.ts` anywhere, and everything under `tests/`).
 
-The check scripts gate what a linter cannot see — each is a CLI export that exits non-zero on a
-violation:
+The check scripts gate what a linter cannot see — each is a CLI export that exits non-zero on a violation:
 
 | Export | What it gates |
 | --- | --- |
@@ -67,17 +54,13 @@ violation:
 
 ## Deliberate departures
 
-A justified departure honours the ecosystem's Chesterton's-Fence convention: silence the rule at the
-exact site with deno lint's native comment, and pin the reason — a `Deliberate: …` note or an
-`ADR-NNNN` reference — beside it so the fence explains itself:
+A justified departure honours the ecosystem's Chesterton's-Fence convention: silence the rule at the exact site with deno lint's native comment, and pin the reason — a `Deliberate: …` note or an `ADR-NNNN` reference — beside it so the fence explains itself:
 
 ```ts
 // deno-lint-ignore innis/max-params -- Deliberate: the wire format dictates the shape
 ```
 
-The comment is scoped to the statement it sits on — a fence on one function silences that function,
-not its siblings. To silence a rule project-wide (rather than a single site), exclude its identifier
-in deno.json:
+The comment is scoped to the statement it sits on — a fence on one function silences that function, not its siblings. To silence a rule project-wide (rather than a single site), exclude its identifier in deno.json:
 
 ```json
 {
