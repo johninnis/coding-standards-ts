@@ -4,7 +4,7 @@
  * Reads the report the shared `coverage` task writes:
  *
  * ```json
- * { "tasks": { "coverage": "... && deno run --allow-read jsr:@innis/coding-standards/check-coverage" } }
+ * { "tasks": { "coverage": "... && deno run --allow-read jsr:@innis/coding-standards@^0.2.0/check-coverage" } }
  * ```
  *
  * @module

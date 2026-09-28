@@ -9,7 +9,7 @@
  * their value — are exempted by pattern:
  *
  * ```json
- * { "tasks": { "exports-tested": "deno run --allow-read --allow-run jsr:@innis/coding-standards/check-exports-tested -- --exempt '^KIND_'" } }
+ * { "tasks": { "exports-tested": "deno run --allow-read --allow-run jsr:@innis/coding-standards@^0.2.0/check-exports-tested -- --exempt '^KIND_'" } }
  * ```
  *
  * @module

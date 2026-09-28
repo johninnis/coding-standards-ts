@@ -1,6 +1,6 @@
 import { parse } from "@std/jsonc"
 import { entryPointsOf } from "./entry-points.ts"
-import type { DocOutput } from "./doc-symbols.ts"
+import { type DocOutput, isDocOutput } from "./doc-symbols.ts"
 
 const CONFIG_FILES: ReadonlyArray<string> = ["deno.json", "deno.jsonc", "jsr.json"]
 
@@ -28,7 +28,7 @@ export const readEntryPoints = async (): Promise<ReadonlyArray<string>> => {
   return entryPointsOf(exports)
 }
 
-/** Runs `deno doc --json` over the entry points and parses what it prints. Throws when it fails. */
+/** Runs `deno doc --json` over the entry points and parses what it prints. Throws when it fails or prints an unexpected shape. */
 export const runDenoDoc = async (entries: ReadonlyArray<string>): Promise<DocOutput> => {
   const command = new Deno.Command(Deno.execPath(), {
     args: ["doc", "--json", ...entries],
@@ -39,5 +39,7 @@ export const runDenoDoc = async (entries: ReadonlyArray<string>): Promise<DocOut
 
   if (code !== 0) throw new Error(`deno doc --json failed:\n${new TextDecoder().decode(stderr)}`)
 
-  return JSON.parse(new TextDecoder().decode(stdout))
+  const output: unknown = JSON.parse(new TextDecoder().decode(stdout))
+  if (!isDocOutput(output)) throw new Error("deno doc --json printed a shape these checks do not recognise")
+  return output
 }

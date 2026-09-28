@@ -29,6 +29,25 @@ export interface DocCoverage {
 
 const VALUE_KINDS: ReadonlySet<string> = new Set(["function", "class", "variable"])
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value)
+
+const isDocDeclaration = (value: unknown): value is DocDeclaration =>
+  isRecord(value) && typeof value.declarationKind === "string" && typeof value.kind === "string" &&
+  (value.jsDoc === undefined ||
+    (isRecord(value.jsDoc) && (value.jsDoc.doc === undefined || typeof value.jsDoc.doc === "string")))
+
+const isDocSymbol = (value: unknown): value is DocSymbol =>
+  isRecord(value) && typeof value.name === "string" && Array.isArray(value.declarations) &&
+  value.declarations.every(isDocDeclaration)
+
+const isDocNode = (value: unknown): value is DocNode =>
+  isRecord(value) && (value.symbols === undefined || (Array.isArray(value.symbols) && value.symbols.every(isDocSymbol)))
+
+/** Whether `value` has the shape `deno doc --json` prints, as far as these checks read it. */
+export const isDocOutput = (value: unknown): value is DocOutput =>
+  isRecord(value) && isRecord(value.nodes) && Object.values(value.nodes).every(isDocNode)
+
 const isPublic = (symbol: DocSymbol): boolean =>
   symbol.declarations.some((declaration) => declaration.declarationKind === "export")
 

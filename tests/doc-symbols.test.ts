@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert"
 import type { DocDeclaration, DocOutput } from "../src/doc-symbols.ts"
-import { docCoverageOf, publicValueExports } from "../src/doc-symbols.ts"
+import { docCoverageOf, isDocOutput, publicValueExports } from "../src/doc-symbols.ts"
 
 const declaration = (overrides: Partial<DocDeclaration>): DocDeclaration => ({
   declarationKind: "export",
@@ -76,4 +76,21 @@ Deno.test("type-only exports have no runtime to exercise", () => {
   })
 
   assertEquals(publicValueExports(doc), [])
+})
+
+Deno.test("isDocOutput - accepts the shape deno doc prints", () => {
+  assertEquals(
+    isDocOutput({
+      nodes: {
+        "file:///a.ts": { symbols: [{ name: "a", declarations: [{ declarationKind: "export", kind: "function" }] }] },
+      },
+    }),
+    true,
+  )
+})
+
+Deno.test("isDocOutput - rejects anything else", () => {
+  assertEquals(isDocOutput(null), false)
+  assertEquals(isDocOutput({ nodes: [] }), false)
+  assertEquals(isDocOutput({ nodes: { a: { symbols: [{ name: 1, declarations: [] }] } } }), false)
 })

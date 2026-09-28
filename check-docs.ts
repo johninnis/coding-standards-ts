@@ -7,7 +7,7 @@
  * repository's deno.json, deno.jsonc or jsr.json:
  *
  * ```json
- * { "tasks": { "docs": "deno run --allow-read --allow-run jsr:@innis/coding-standards/check-docs" } }
+ * { "tasks": { "docs": "deno run --allow-read --allow-run jsr:@innis/coding-standards@^0.2.0/check-docs" } }
  * ```
  *
  * @module
