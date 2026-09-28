@@ -44,7 +44,7 @@ Every rule reports under the plugin's `innis/` namespace, so a finding reads `in
 
 Two rules relax in test code: `no-emoji` and `uk-english` skip test files (`*.test.ts` anywhere, and everything under `tests/`).
 
-A repository that adds lint rules of its own can build on the same path and layer helpers the plugin uses, from the `/lint-helpers` export: `relPath`, `layerOf`, `isTestFile` and `relativeImportVisitor`.
+A repository that adds lint rules of its own can build on the same path and layer helpers the plugin uses, from the `/lint-helpers` export: `relPath`, `layerOf`, `isTestFile`, `importSourceVisitor` and `relativeImportVisitor`.
 
 The check scripts gate what a linter cannot see — each is a CLI export that exits non-zero on a violation:
 

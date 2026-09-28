@@ -24,18 +24,13 @@ export const isTestFile = (relativePath: string): boolean =>
   relativePath.endsWith(".test.ts") || relativePath.startsWith("tests/")
 
 /**
- * A lint visitor that calls `onImport` for every relative module specifier in a file (static imports, re-exports
- * and literal dynamic imports), with the specifier node and the target resolved against `fromDir` as a
- * repository-relative path.
+ * A lint visitor that calls `onSource` for every literal module specifier in a file: static imports, re-exports and
+ * literal dynamic imports.
  */
-export const relativeImportVisitor = (
-  fromDir: string,
-  onImport: (source: Deno.lint.StringLiteral, target: string) => void,
-): Deno.lint.LintVisitor => {
+export const importSourceVisitor = (onSource: (source: Deno.lint.StringLiteral) => void): Deno.lint.LintVisitor => {
   const check = (source: Deno.lint.Expression | null | undefined): void => {
     if (!source || source.type !== "Literal" || typeof source.value !== "string") return
-    if (!source.value.startsWith(".")) return
-    onImport(source, relPath(resolve(fromDir, source.value)))
+    onSource(source)
   }
   return {
     ImportDeclaration(node): void {
@@ -52,3 +47,17 @@ export const relativeImportVisitor = (
     },
   }
 }
+
+/**
+ * A lint visitor that calls `onImport` for every relative module specifier in a file (static imports, re-exports
+ * and literal dynamic imports), with the specifier node and the target resolved against `fromDir` as a
+ * repository-relative path.
+ */
+export const relativeImportVisitor = (
+  fromDir: string,
+  onImport: (source: Deno.lint.StringLiteral, target: string) => void,
+): Deno.lint.LintVisitor =>
+  importSourceVisitor((source): void => {
+    if (!source.value.startsWith(".")) return
+    onImport(source, relPath(resolve(fromDir, source.value)))
+  })

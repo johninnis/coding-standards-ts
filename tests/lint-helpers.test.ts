@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert"
 import { resolve } from "@std/path"
-import { isTestFile, layerOf, relativeImportVisitor, relPath } from "../lint-helpers.ts"
+import { importSourceVisitor, isTestFile, layerOf, relativeImportVisitor, relPath } from "../lint-helpers.ts"
 import { toPosix } from "../src/lint-helpers.ts"
 
 Deno.test("toPosix - turns Windows separators into forward slashes", () => {
@@ -46,4 +46,25 @@ Deno.test("relativeImportVisitor - reports each relative specifier with its reso
     'import { x } from "../application/b.ts"\nimport { y } from "@std/path"\nexport * from "./c.ts"',
   )
   assertEquals(seen, ["src/application/b.ts", "src/domain/c.ts"])
+})
+
+Deno.test("importSourceVisitor - reports every literal module specifier: imports, re-exports and dynamic imports", () => {
+  const seen: Array<string> = []
+  const plugin: Deno.lint.Plugin = {
+    name: "probe",
+    rules: {
+      imports: {
+        create: () =>
+          importSourceVisitor((source) => {
+            seen.push(source.value)
+          }),
+      },
+    },
+  }
+  Deno.lint.runPlugin(
+    plugin,
+    "src/domain/a.ts",
+    'import { x } from "@std/path"\nexport * from "./b.ts"\nexport { y } from "./c.ts"\nconst m = await import("./d.ts")\nconst n = await import(name)',
+  )
+  assertEquals(seen, ["@std/path", "./b.ts", "./c.ts", "./d.ts"])
 })
