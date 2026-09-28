@@ -1,6 +1,5 @@
-import { dirname, relative, resolve } from "@std/path"
-
-const LAYERS: ReadonlySet<string> = new Set(["domain", "application", "infrastructure"])
+import { dirname } from "@std/path"
+import { isTestFile, layerOf, relativeImportVisitor, relPath, toPosix } from "./lint-helpers.ts"
 
 interface LayerRule {
   readonly fromLayer: string
@@ -16,9 +15,29 @@ const FORBIDDEN: ReadonlyArray<LayerRule> = [
     reason: "the domain layer must not depend on the infrastructure layer",
   },
   {
+    fromLayer: "domain",
+    toLayer: "presentation",
+    reason: "the domain layer must not depend on the presentation layer",
+  },
+  {
     fromLayer: "application",
     toLayer: "infrastructure",
     reason: "the application layer must not depend on the infrastructure layer",
+  },
+  {
+    fromLayer: "application",
+    toLayer: "presentation",
+    reason: "the application layer must not depend on the presentation layer",
+  },
+  {
+    fromLayer: "infrastructure",
+    toLayer: "presentation",
+    reason: "infrastructure and presentation are both outer layers and must not depend on each other",
+  },
+  {
+    fromLayer: "presentation",
+    toLayer: "infrastructure",
+    reason: "infrastructure and presentation are both outer layers and must not depend on each other",
   },
 ]
 
@@ -53,45 +72,6 @@ const UK_ENGLISH_OFFENDERS: ReadonlyArray<{ readonly us: RegExp; readonly uk: st
 
 const ASSERTION_MESSAGE =
   "Type assertion (`as`) bypasses the type checker. Use a type guard, narrow the value, or fix the upstream type."
-
-const toPosix = (path: string): string => path.replaceAll("\\", "/")
-
-const relPath = (filename: string): string => toPosix(relative(Deno.cwd(), filename))
-
-const layerOf = (relativePath: string): string | null => {
-  const segments = relativePath.split("/")
-  if (segments[0] !== "src") return null
-  const candidate = segments[1]
-  return candidate !== undefined && LAYERS.has(candidate) ? candidate : null
-}
-
-const isTestFile = (relativePath: string): boolean =>
-  relativePath.endsWith(".test.ts") || relativePath.startsWith("tests/")
-
-const relativeImportVisitor = (
-  fromDir: string,
-  onImport: (source: Deno.lint.StringLiteral, target: string) => void,
-): Deno.lint.LintVisitor => {
-  const check = (source: Deno.lint.Expression | null | undefined): void => {
-    if (!source || source.type !== "Literal" || typeof source.value !== "string") return
-    if (!source.value.startsWith(".")) return
-    onImport(source, relPath(resolve(fromDir, source.value)))
-  }
-  return {
-    ImportDeclaration(node): void {
-      check(node.source)
-    },
-    ExportAllDeclaration(node): void {
-      check(node.source)
-    },
-    ExportNamedDeclaration(node): void {
-      check(node.source)
-    },
-    ImportExpression(node): void {
-      check(node.source)
-    },
-  }
-}
 
 // The `\b` in the offender patterns cannot see camelCase or SCREAMING_SNAKE boundaries,
 // so identifiers are matched in spelled-out form: "backgroundColor" as "background color".

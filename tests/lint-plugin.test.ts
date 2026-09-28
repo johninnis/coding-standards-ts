@@ -136,6 +136,35 @@ Deno.test("domain importing application is a layer violation", () => {
   )
 })
 
+Deno.test("application importing presentation is a layer violation", () => {
+  assert(
+    idsFor("src/application/service/y.ts", 'import { x } from "../../presentation/view.ts"')
+      .includes("innis/no-layer-violation"),
+  )
+})
+
+Deno.test("infrastructure importing presentation is a layer violation", () => {
+  assert(
+    idsFor("src/infrastructure/http/client.ts", 'import { x } from "../../presentation/view.ts"')
+      .includes("innis/no-layer-violation"),
+  )
+})
+
+Deno.test("presentation importing infrastructure is a layer violation", () => {
+  assert(
+    idsFor("src/presentation/view.ts", 'import { x } from "../infrastructure/http/client.ts"')
+      .includes("innis/no-layer-violation"),
+  )
+})
+
+Deno.test("presentation importing application points inward and is fine", () => {
+  assertEquals(
+    idsFor("src/presentation/view.ts", 'import { x } from "../application/service/y.ts"')
+      .includes("innis/no-layer-violation"),
+    false,
+  )
+})
+
 Deno.test("application importing domain points inward and is fine", () => {
   assertEquals(
     idsFor("src/application/service/y.ts", 'import { x } from "../../domain/value-object/thing.ts"')

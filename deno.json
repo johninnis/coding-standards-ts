@@ -1,6 +1,6 @@
 {
   "name": "@innis/coding-standards",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publish": {
     "exclude": ["tests/", "deno.lock", ".github/"]
   },
@@ -12,6 +12,7 @@
   "description": "Deno lint rules and CI check scripts that enforce the Innis coding conventions: clean-architecture layering, no type assertions, parameter and file-length limits, kebab-case filenames, UK English, and the documentation, exports-tested and coverage gates.",
   "exports": {
     "./lint-plugin": "./lint-plugin.ts",
+    "./lint-helpers": "./lint-helpers.ts",
     "./check-docs": "./check-docs.ts",
     "./check-exports-tested": "./check-exports-tested.ts",
     "./check-coverage": "./check-coverage.ts"
@@ -26,7 +27,7 @@
     "@std/path": "jsr:@std/path@^1"
   },
   "tasks": {
-    "check": "deno check lint-plugin.ts check-docs.ts check-exports-tested.ts check-coverage.ts src/ tests/",
+    "check": "deno check lint-plugin.ts lint-helpers.ts check-docs.ts check-exports-tested.ts check-coverage.ts src/ tests/",
     "lint": "deno lint",
     "fmt": "deno fmt",
     "fmt:check": "deno fmt --check",

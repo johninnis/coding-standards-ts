@@ -4,7 +4,7 @@
  * Point a repository's `lint.plugins` at this module:
  *
  * ```json
- * { "lint": { "plugins": ["jsr:@innis/coding-standards@^0.1.0/lint-plugin"] } }
+ * { "lint": { "plugins": ["jsr:@innis/coding-standards@^0.2.0/lint-plugin"] } }
  * ```
  *
  * The layer rules resolve filenames against the directory `deno lint` runs from, so run it

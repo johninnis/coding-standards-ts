@@ -15,12 +15,12 @@ There is nothing to install — Deno resolves the package straight from JSR. Poi
 ```json
 {
   "lint": {
-    "plugins": ["jsr:@innis/coding-standards@^0.1.0/lint-plugin"]
+    "plugins": ["jsr:@innis/coding-standards@^0.2.0/lint-plugin"]
   },
   "tasks": {
-    "coverage": "rm -rf cov_profile && deno test -A --coverage=cov_profile && deno coverage cov_profile --lcov --output=cov_profile/lcov.info && deno coverage cov_profile && deno run --allow-read jsr:@innis/coding-standards@^0.1.0/check-coverage",
-    "exports-tested": "deno run --allow-read --allow-run jsr:@innis/coding-standards@^0.1.0/check-exports-tested",
-    "docs": "deno run --allow-read --allow-run jsr:@innis/coding-standards@^0.1.0/check-docs"
+    "coverage": "rm -rf cov_profile && deno test -A --coverage=cov_profile && deno coverage cov_profile --lcov --output=cov_profile/lcov.info && deno coverage cov_profile && deno run --allow-read jsr:@innis/coding-standards@^0.2.0/check-coverage",
+    "exports-tested": "deno run --allow-read --allow-run jsr:@innis/coding-standards@^0.2.0/check-exports-tested",
+    "docs": "deno run --allow-read --allow-run jsr:@innis/coding-standards@^0.2.0/check-docs"
   }
 }
 ```
@@ -34,7 +34,7 @@ Every rule reports under the plugin's `innis/` namespace, so a finding reads `in
 | Identifier | What it flags |
 | --- | --- |
 | `innis/no-type-assertions` | An `as` or angle-bracket type assertion (other than `as const`) — it bypasses the type checker; use a type guard, narrow the value, or fix the upstream type. |
-| `innis/no-layer-violation` | A relative import — static or dynamic `import()` — that points outward against clean-architecture layering: `src/domain/` importing from `src/application/` or `src/infrastructure/`, or `src/application/` from `src/infrastructure/`. Files under no layer directory are unlayered and exempt. |
+| `innis/no-layer-violation` | A relative import — static or dynamic `import()` — that points outward against clean-architecture layering: `src/domain/` importing from `src/application/`, `src/infrastructure/` or `src/presentation/`; `src/application/` from `src/infrastructure/` or `src/presentation/`; or either outer layer, `src/infrastructure/` or `src/presentation/`, from the other. Both outer layers depend inward only, and a composition root outside the layer folders wires them together. Files under no layer directory are unlayered and exempt. |
 | `innis/no-catch-in-layer` | A `catch` clause or a `.catch(...)` call in `src/domain/` or `src/application/` — a fault bubbles to the edges or the function returns a Result; only Infrastructure and Presentation handle. |
 | `innis/max-params` | A function with more than three parameters — a design signal to decompose the unit. |
 | `innis/no-emoji` | An emoji anywhere in a source file (code, comment, or string). |
@@ -43,6 +43,8 @@ Every rule reports under the plugin's `innis/` namespace, so a finding reads `in
 | `innis/uk-english` | A US spelling in a declared identifier (variable, function, parameter, class, interface, type alias, property or method name), matched word-by-word so camelCase compounds such as `backgroundColor` are caught; string values are left alone. |
 
 Two rules relax in test code: `no-emoji` and `uk-english` skip test files (`*.test.ts` anywhere, and everything under `tests/`).
+
+A repository that adds lint rules of its own can build on the same path and layer helpers the plugin uses, from the `/lint-helpers` export: `relPath`, `layerOf`, `isTestFile` and `relativeImportVisitor`.
 
 The check scripts gate what a linter cannot see — each is a CLI export that exits non-zero on a violation:
 
