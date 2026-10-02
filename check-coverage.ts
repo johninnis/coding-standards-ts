@@ -10,7 +10,6 @@
  * @module
  */
 
-// deno-lint-ignore-file no-console -- Deliberate: a check script reports through the console
 import { coveragePercent, lineCoverageOf } from "./src/line-coverage.ts"
 
 const LCOV_PATH = "cov_profile/lcov.info"

@@ -4,7 +4,11 @@ import { type DocOutput, isDocOutput } from "./doc-symbols.ts"
 
 const CONFIG_FILES: ReadonlyArray<string> = ["deno.json", "deno.jsonc", "jsr.json"]
 
-const readFirstConfig = async (): Promise<unknown> => {
+/**
+ * The parsed config of the repository `deno run` was invoked in — its deno.json, deno.jsonc or jsr.json, whichever
+ * exists first, in that order — or null when it has none.
+ */
+export const readRepositoryConfig = async (): Promise<unknown> => {
   for (const file of CONFIG_FILES) {
     try {
       return parse(await Deno.readTextFile(file))
@@ -22,7 +26,7 @@ const readFirstConfig = async (): Promise<unknown> => {
  * deno.json, deno.jsonc or jsr.json — whichever exists first, in that order.
  */
 export const readEntryPoints = async (): Promise<ReadonlyArray<string>> => {
-  const config = await readFirstConfig()
+  const config = await readRepositoryConfig()
   const exports = typeof config === "object" && config !== null ? Reflect.get(config, "exports") : undefined
 
   return entryPointsOf(exports)

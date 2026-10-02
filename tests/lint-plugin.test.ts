@@ -225,3 +225,89 @@ Deno.test("a catch in infrastructure is where catches belong", () => {
     false,
   )
 })
+
+const CONVERSION = 'try { return ok(JSON.parse(text)) } catch { return failure("malformed-json") }'
+
+Deno.test("an edge catch that converts one call's refusal into a returned failure is permitted", () => {
+  assertEquals(
+    idsFor("src/domain/service/a.ts", `export const f = (text: string): unknown => { ${CONVERSION} }`)
+      .includes("innis/no-catch-in-layer"),
+    false,
+  )
+})
+
+Deno.test("an edge catch may read the caught value into the failure it returns", () => {
+  assertEquals(
+    idsFor(
+      "src/application/service/a.ts",
+      "export const f = (): unknown => { try { return g() } catch (e) { return h(e) } }",
+    )
+      .includes("innis/no-catch-in-layer"),
+    false,
+  )
+})
+
+Deno.test("a catch around more than one statement is flagged", () => {
+  assert(
+    idsFor(
+      "src/domain/service/a.ts",
+      "export const f = (): unknown => { try { g(); return h() } catch { return null } }",
+    )
+      .includes("innis/no-catch-in-layer"),
+  )
+})
+
+Deno.test("a catch whose try does not return the call's result is flagged", () => {
+  assert(
+    idsFor("src/domain/service/a.ts", "export const f = (): unknown => { try { g() } catch { return null } }")
+      .includes("innis/no-catch-in-layer"),
+  )
+})
+
+Deno.test("a catch that does more than return a failure is flagged", () => {
+  assert(
+    idsFor(
+      "src/domain/service/a.ts",
+      "export const f = (): unknown => { try { return g() } catch { h(); return null } }",
+    )
+      .includes("innis/no-catch-in-layer"),
+  )
+})
+
+Deno.test("a catch that returns nothing swallows the fault and is flagged", () => {
+  assert(
+    idsFor("src/domain/service/a.ts", "export const f = (): unknown => { try { return g() } catch { return } }")
+      .includes("innis/no-catch-in-layer"),
+  )
+})
+
+Deno.test("a catch with a finally block is flagged", () => {
+  assert(
+    idsFor(
+      "src/domain/service/a.ts",
+      "export const f = (): unknown => { try { return g() } catch { return null } finally { h() } }",
+    )
+      .includes("innis/no-catch-in-layer"),
+  )
+})
+
+Deno.test("a promise .catch that hands the fault to an injected sink is permitted", () => {
+  assertEquals(
+    idsFor(
+      "src/application/service/a.ts",
+      "export const f = (p: Promise<void>, deps: D): void => { p.catch(deps.onError) }",
+    )
+      .includes("innis/no-catch-in-layer"),
+    false,
+  )
+})
+
+Deno.test("a promise .catch with an inline handler is flagged", () => {
+  assert(
+    idsFor(
+      "src/application/service/a.ts",
+      "export const f = (p: Promise<void>, deps: D): void => { p.catch((e) => deps.onError(e)) }",
+    )
+      .includes("innis/no-catch-in-layer"),
+  )
+})

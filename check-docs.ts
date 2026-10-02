@@ -13,7 +13,6 @@
  * @module
  */
 
-// deno-lint-ignore-file no-console -- Deliberate: a check script reports through the console
 import { readEntryPoints, runDenoDoc } from "./src/deno-doc.ts"
 import { docCoverageOf } from "./src/doc-symbols.ts"
 

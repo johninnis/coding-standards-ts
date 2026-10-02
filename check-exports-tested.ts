@@ -15,7 +15,6 @@
  * @module
  */
 
-// deno-lint-ignore-file no-console -- Deliberate: a check script reports through the console
 import { readEntryPoints, runDenoDoc } from "./src/deno-doc.ts"
 import { publicValueExports } from "./src/doc-symbols.ts"
 import { exemptPatternFrom, untestedExports } from "./src/exports-tested.ts"

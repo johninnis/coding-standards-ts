@@ -88,6 +88,24 @@ const lineCount = (text: string): number => {
   return segments.at(-1) === "" ? segments.length - 1 : segments.length
 }
 
+const isSoleReturnOfValue = (block: Deno.lint.BlockStatement): boolean => {
+  const [statement, ...rest] = block.body
+  return rest.length === 0 && statement?.type === "ReturnStatement" && statement.argument !== null
+}
+
+// The one catch an inner layer may hold (CODING-CONVENTIONS §7, nostr-adrs ADR-0001): the try returns a single
+// statement's value and the catch only returns the failure that stands for its refusal, with nothing left to finalise.
+const isEdgeConversion = (node: Deno.lint.TryStatement): boolean =>
+  node.finalizer === null && isSoleReturnOfValue(node.block) && node.handler !== null &&
+  isSoleReturnOfValue(node.handler.body)
+
+// A detached promise may hand its fault, untouched, to a sink named by reference — never to an inline handler.
+const isSinkReference = (args: ReadonlyArray<Deno.lint.Node>): boolean => {
+  const [sink, ...rest] = args
+  if (rest.length > 0 || sink === undefined) return false
+  return sink.type === "Identifier" || (sink.type === "MemberExpression" && !sink.computed)
+}
+
 const isConstAssertion = (node: Deno.lint.TSAsExpression): boolean => {
   const annotation = node.typeAnnotation
   return annotation.type === "TSTypeReference" &&
@@ -100,7 +118,8 @@ const isConstAssertion = (node: Deno.lint.TSAsExpression): boolean => {
  *
  * Rules: `no-type-assertions` (no `as` other than `as const`), `no-layer-violation`
  * (relative imports under `src/` may only point inward), `no-catch-in-layer` (domain and
- * application code lets faults bubble or returns a value), `max-params` (more than three
+ * application code lets faults bubble or returns a value; the one permitted catch converts a single call's refusal
+ * into a returned failure, and a detached promise may hand its fault to a sink named by reference), `max-params` (more than three
  * parameters is a design signal), `no-emoji`, `kebab-case-filename`, `max-file-lines`
  * (five hundred), and `uk-english` (identifiers use UK spelling). Layer and path rules
  * resolve filenames against the working directory `deno lint` runs from — the consuming
@@ -140,16 +159,18 @@ const plugin: Deno.lint.Plugin = {
       create(context): Deno.lint.LintVisitor {
         const layer = layerOf(relPath(context.filename))
         if (layer !== "domain" && layer !== "application") return {}
-        const message = `The ${layer} layer must not catch errors. Let them bubble or return a Result.`
+        const message =
+          `The ${layer} layer must not catch errors. Let them bubble, or convert one call's refusal at the edge where its input enters: \`try { return call() } catch { return failure }\`.`
         return {
           TryStatement(node): void {
-            if (node.handler === null) return
+            if (node.handler === null || isEdgeConversion(node)) return
             context.report({ node: node.handler, message })
           },
           CallExpression(node): void {
             const callee = node.callee
             if (callee.type !== "MemberExpression" || callee.computed) return
             if (callee.property.type !== "Identifier" || callee.property.name !== "catch") return
+            if (isSinkReference(node.arguments)) return
             context.report({ node: callee.property, message })
           },
         }
