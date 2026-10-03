@@ -55,6 +55,7 @@ The check scripts gate what a linter cannot see — each is a CLI export that ex
 | `/check-exports-tested` | Every public runtime export (function, class, variable — type-only exports have no runtime to exercise) has at least one word-boundary reference in `tests/`. Protocol-defined constants whose only possible test would restate their value are exempted by pattern: `--exempt '^KIND_'`. |
 | `/check-coverage` | The summed lcov line coverage in `cov_profile/lcov.info` meets the eighty percent floor. |
 | `/check-lint-exemptions` | Every lint exemption in the `lint` task still matches something. Each `deno lint` pass that excludes rules is re-run with every rule on, and each excluded rule must still fire in every file the pass names (in at least one file under a directory it names). Run it after `lint` in `ci`. |
+| `/check-path-lengths` | No tracked path (`git ls-files`) holds a component longer than 95 characters, the longest JSR accepts. `deno publish --dry-run` does not check this, so a long filename (an ADR's, typically) otherwise fails only the real publish. Needs `--allow-run=git`. |
 
 ## Deliberate departures
 
@@ -92,7 +93,7 @@ To turn a rule off for the whole package rather than for named files, exclude it
 ## Development
 
 ```sh
-deno task ci             # the full gate: fmt:check, lint, lint-exemptions, check, coverage, exports-tested, docs
+deno task ci             # the full gate: fmt:check, lint, lint-exemptions, check, coverage, exports-tested, docs, path-lengths
 deno task test           # unit tests only
 deno task coverage       # tests + the line-coverage floor
 deno task publish:dry    # verify the JSR publish surface

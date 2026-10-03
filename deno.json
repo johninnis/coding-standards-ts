@@ -9,14 +9,15 @@
     "exclude": ["jsr:@innis/*"]
   },
   "license": "MIT",
-  "description": "Deno lint rules and CI check scripts that enforce the Innis coding conventions: clean-architecture layering, no type assertions, parameter and file-length limits, kebab-case filenames, UK English, and the documentation, exports-tested and coverage gates.",
+  "description": "Deno lint rules and CI check scripts that enforce the Innis coding conventions: clean-architecture layering, no type assertions, parameter and file-length limits, kebab-case filenames, UK English, and the documentation, exports-tested, coverage and path-length gates.",
   "exports": {
     "./lint-plugin": "./lint-plugin.ts",
     "./lint-helpers": "./lint-helpers.ts",
     "./check-docs": "./check-docs.ts",
     "./check-exports-tested": "./check-exports-tested.ts",
     "./check-coverage": "./check-coverage.ts",
-    "./check-lint-exemptions": "./check-lint-exemptions.ts"
+    "./check-lint-exemptions": "./check-lint-exemptions.ts",
+    "./check-path-lengths": "./check-path-lengths.ts"
   },
   "compilerOptions": {
     "strict": true,
@@ -28,9 +29,9 @@
     "@std/path": "jsr:@std/path@^1"
   },
   "tasks": {
-    "check": "deno check lint-plugin.ts lint-helpers.ts check-docs.ts check-exports-tested.ts check-coverage.ts check-lint-exemptions.ts src/ tests/",
+    "check": "deno check lint-plugin.ts lint-helpers.ts check-docs.ts check-exports-tested.ts check-coverage.ts check-lint-exemptions.ts check-path-lengths.ts src/ tests/",
     // A check script reports through the console
-    "lint": "deno lint --ignore=cov_profile/,check-coverage.ts,check-docs.ts,check-exports-tested.ts,check-lint-exemptions.ts && deno lint --rules-exclude=no-console check-coverage.ts check-docs.ts check-exports-tested.ts check-lint-exemptions.ts",
+    "lint": "deno lint --ignore=cov_profile/,check-coverage.ts,check-docs.ts,check-exports-tested.ts,check-lint-exemptions.ts,check-path-lengths.ts && deno lint --rules-exclude=no-console check-coverage.ts check-docs.ts check-exports-tested.ts check-lint-exemptions.ts check-path-lengths.ts",
     "fmt": "deno fmt",
     "fmt:check": "deno fmt --check",
     "test": "deno test -A",
@@ -38,8 +39,9 @@
     "exports-tested": "deno run --allow-read --allow-run check-exports-tested.ts",
     "docs": "deno run --allow-read --allow-run check-docs.ts",
     "lint-exemptions": "deno run --allow-read --allow-run check-lint-exemptions.ts",
+    "path-lengths": "deno run --allow-run=git check-path-lengths.ts",
     "publish:dry": "deno publish --dry-run",
-    "ci": "deno task fmt:check && deno task lint && deno task lint-exemptions && deno task check && deno task coverage && deno task exports-tested && deno task docs"
+    "ci": "deno task fmt:check && deno task lint && deno task lint-exemptions && deno task check && deno task coverage && deno task exports-tested && deno task docs && deno task path-lengths"
   },
   "lint": {
     "plugins": ["./lint-plugin.ts"],
